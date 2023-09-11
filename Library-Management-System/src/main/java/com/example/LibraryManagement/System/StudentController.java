@@ -1,0 +1,60 @@
+package com.example.LibraryManagement.System;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/student")
+public class StudentController {
+
+    @Autowired
+    StudentService studentService;
+    @PostMapping("/add")
+    public ResponseEntity addStudent(@RequestBody Student student){
+        Student response = studentService.addStudent(student);
+        return new ResponseEntity(response, HttpStatus.CREATED);
+    }
+
+    @GetMapping("/get")
+    public ResponseEntity getStudent(@RequestParam("id") int regNo){
+        Student student = studentService.getStudent(regNo);
+        if(student!=null){
+            return new ResponseEntity(student,HttpStatus.FOUND);
+        }
+        return new ResponseEntity("Invalid id!",HttpStatus.BAD_REQUEST);
+    }
+
+    // delete a student --> regNo
+    @PutMapping("/delete")
+    public ResponseEntity deleteStudent(@RequestParam("id") int regNo) {
+        studentService.deleteStudent(regNo);
+        return new ResponseEntity("Deleted Successfully", HttpStatus.ACCEPTED);
+    }
+
+
+    // update the age of a student  ---> regNo, age
+
+    @PutMapping("/updateAge")
+    public ResponseEntity updateAge(@RequestParam("id") int regNo, @RequestParam("age") int newAge) {
+        Student updatedStudent = studentService.updateAge(regNo, newAge);
+        return new ResponseEntity<>(updatedStudent, HttpStatus.OK);
+    }
+
+    // get all the students in the db
+    @GetMapping("/getAll")
+    public ResponseEntity allStudents() {
+        List<Student> allStudent = studentService.allStudents();
+        return new ResponseEntity<>(allStudent, HttpStatus.FOUND);
+    }
+
+    // get list of all male students
+    @GetMapping("/allMale")
+    public ResponseEntity allMaleStudents(){
+        List<Student> allStudent = studentService.allMaleStudents();
+        return new ResponseEntity<>(allStudent, HttpStatus.FOUND);
+    }
+}
