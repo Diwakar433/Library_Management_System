@@ -1,5 +1,6 @@
-package com.example.LibraryManagement.System;
+package com.example.LibraryManagement.System.repository;
 
+import com.example.LibraryManagement.System.model.Student;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
