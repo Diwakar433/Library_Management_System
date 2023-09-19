@@ -2,6 +2,8 @@ package com.example.LibraryManagement.System.service;
 
 import com.example.LibraryManagement.System.Enum.CardStatus;
 import com.example.LibraryManagement.System.Enum.Gender;
+import com.example.LibraryManagement.System.dto.requestDTO.StudentRequest;
+import com.example.LibraryManagement.System.dto.responseDTO.StudentResponse;
 import com.example.LibraryManagement.System.model.LibraryCard;
 import com.example.LibraryManagement.System.model.Student;
 import com.example.LibraryManagement.System.repository.StudentRepository;
@@ -17,7 +19,16 @@ public class StudentService {
 
     @Autowired
     StudentRepository studentRepository;
-    public String addStudent(Student student) {
+    public StudentResponse addStudent(StudentRequest studentRequest) {
+//        set the data from request to student, it prevents from user access and view original data.
+        Student student = new Student();
+        student.setName(studentRequest.getName());
+        student.setAge(studentRequest.getAge());
+        student.setGender(studentRequest.getGender());
+        student.setCourse(studentRequest.getCourse());
+        student.setEmail(studentRequest.getEmail());
+
+//
         LibraryCard libraryCard = new LibraryCard();
 
         libraryCard.setCardNo(String.valueOf(UUID.randomUUID()));
@@ -27,7 +38,14 @@ public class StudentService {
         student.setLibraryCard(libraryCard);
 
         Student savedStudent = studentRepository.save(student); // save both student and libraryCard
-        return "Student added Successfully";
+
+//        for response to set data from saveStudent to studentResponse.
+        StudentResponse studentResponse = new StudentResponse();
+        studentResponse.setName(savedStudent.getName());
+        studentResponse.setEmail(savedStudent.getEmail());
+        studentResponse.setMessage("Student added Successfully");
+        studentResponse.setCarIssuedNo(savedStudent.getLibraryCard().getCardNo());
+        return studentResponse;
     }
 
     public Student getStudent(int regNo) {

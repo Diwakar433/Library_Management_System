@@ -1,6 +1,8 @@
 package com.example.LibraryManagement.System.controller;
 
 import com.example.LibraryManagement.System.Enum.CardStatus;
+import com.example.LibraryManagement.System.dto.requestDTO.StudentRequest;
+import com.example.LibraryManagement.System.dto.responseDTO.StudentResponse;
 import com.example.LibraryManagement.System.model.LibraryCard;
 import com.example.LibraryManagement.System.service.StudentService;
 import com.example.LibraryManagement.System.model.Student;
@@ -19,9 +21,9 @@ public class StudentController {
     @Autowired
     StudentService studentService;
     @PostMapping("/add")
-    public ResponseEntity addStudent(@RequestBody Student student){
+    public ResponseEntity addStudent(@RequestBody StudentRequest studentRequest){
 
-        String response = studentService.addStudent(student);
+        StudentResponse response = studentService.addStudent(studentRequest);
         return new ResponseEntity(response, HttpStatus.CREATED);
     }
 

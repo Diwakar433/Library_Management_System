@@ -1,15 +1,14 @@
 package com.example.LibraryManagement.System.model;
 
-import com.example.LibraryManagement.System.Enum.CardStatus;
+
+import com.example.LibraryManagement.System.Enum.Genre;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-import org.hibernate.annotations.CreationTimestamp;
-import org.springframework.data.annotation.CreatedDate;
 
-import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
+
 
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @NoArgsConstructor
@@ -17,24 +16,27 @@ import java.util.List;
 @Setter
 @Getter
 @Entity
-public class LibraryCard {
+public class Book {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     int id;
 
-    String cardNo;
+    String title;
+
+    int noOfPages;
 
     @Enumerated(EnumType.STRING)
-    CardStatus cardStatus;
+    Genre genre;
 
-    @CreationTimestamp
-    Date issueDate;
+    double cost;
 
-    @OneToOne
+    boolean issue;
+
+    @ManyToOne
     @JoinColumn
-    Student student;
+    Author author;
 
-    @OneToMany(mappedBy = "libraryCard", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL)
     List<Transaction> transactionList = new ArrayList<>();
 }
