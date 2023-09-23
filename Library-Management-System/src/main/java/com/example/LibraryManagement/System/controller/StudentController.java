@@ -29,9 +29,10 @@ public class StudentController {
 
     @GetMapping("/get")
     public ResponseEntity getStudent(@RequestParam("id") int regNo){
-        Student student = studentService.getStudent(regNo);
-        if(student!=null){
-            return new ResponseEntity(student,HttpStatus.FOUND);
+        StudentResponse studentResponse = studentService.getStudent(regNo);
+        if(studentResponse!=null){
+
+            return new ResponseEntity(studentResponse,HttpStatus.FOUND);
         }
         return new ResponseEntity("Invalid id!",HttpStatus.BAD_REQUEST);
     }
@@ -48,21 +49,21 @@ public class StudentController {
 
     @PutMapping("/updateAge")
     public ResponseEntity updateAge(@RequestParam("id") int regNo, @RequestParam("age") int newAge) {
-        Student updatedStudent = studentService.updateAge(regNo, newAge);
+        StudentResponse updatedStudent = studentService.updateAge(regNo, newAge);
         return new ResponseEntity<>(updatedStudent, HttpStatus.OK);
     }
 
     // get all the students in the db
     @GetMapping("/getAll")
     public ResponseEntity allStudents() {
-        List<Student> allStudent = studentService.allStudents();
+        List<StudentResponse> allStudent = studentService.allStudents();
         return new ResponseEntity<>(allStudent, HttpStatus.FOUND);
     }
 
     // get list of all male students
     @GetMapping("/allMale")
     public ResponseEntity allMaleStudents(){
-        List<Student> allStudent = studentService.allMaleStudents();
+        List<StudentResponse> allStudent = studentService.allMaleStudents();
         return new ResponseEntity<>(allStudent, HttpStatus.FOUND);
     }
 }

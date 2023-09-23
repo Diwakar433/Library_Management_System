@@ -1,20 +1,21 @@
 package com.example.LibraryManagement.System.dto.responseDTO;
 
+
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 @Getter
 @Setter
-public class StudentResponse {
-
+@Builder
+public class AuthorResponse {
     String name;
+
+    int age;
+
     String email;
 
-    String message;
-
-    LibraryCardResponse libraryCardResponse;
+    String lastActivity;
 }

@@ -3,13 +3,17 @@ package com.example.LibraryManagement.System.service;
 import com.example.LibraryManagement.System.Enum.CardStatus;
 import com.example.LibraryManagement.System.Enum.Gender;
 import com.example.LibraryManagement.System.dto.requestDTO.StudentRequest;
+import com.example.LibraryManagement.System.dto.responseDTO.LibraryCardResponse;
 import com.example.LibraryManagement.System.dto.responseDTO.StudentResponse;
 import com.example.LibraryManagement.System.model.LibraryCard;
 import com.example.LibraryManagement.System.model.Student;
 import com.example.LibraryManagement.System.repository.StudentRepository;
+import com.example.LibraryManagement.System.transformer.LibraryCardTransformer;
+import com.example.LibraryManagement.System.transformer.StudentTransformer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -21,38 +25,26 @@ public class StudentService {
     StudentRepository studentRepository;
     public StudentResponse addStudent(StudentRequest studentRequest) {
 //        set the data from request to student, it prevents from user access and view original data.
-        Student student = new Student();
-        student.setName(studentRequest.getName());
-        student.setAge(studentRequest.getAge());
-        student.setGender(studentRequest.getGender());
-        student.setCourse(studentRequest.getCourse());
-        student.setEmail(studentRequest.getEmail());
+        Student student = StudentTransformer.studentRequestToStudent(studentRequest);
 
-//
-        LibraryCard libraryCard = new LibraryCard();
+//      set the library card data
+        LibraryCard card = LibraryCardTransformer.prepareLibraryCard();
+        card.setStudent(student);
 
-        libraryCard.setCardNo(String.valueOf(UUID.randomUUID()));
-        libraryCard.setCardStatus(CardStatus.ACTIVE);
-        libraryCard.setStudent(student);
-
-        student.setLibraryCard(libraryCard);
+        student.setLibraryCard(card); // set the libraryCard for student
 
         Student savedStudent = studentRepository.save(student); // save both student and libraryCard
 
-//        for response to set data from saveStudent to studentResponse.
-        StudentResponse studentResponse = new StudentResponse();
-        studentResponse.setName(savedStudent.getName());
-        studentResponse.setEmail(savedStudent.getEmail());
-        studentResponse.setMessage("Student added Successfully");
-        studentResponse.setCarIssuedNo(savedStudent.getLibraryCard().getCardNo());
-        return studentResponse;
+//        for response to set data from saveStudent to studentResponse using transformer.
+        return StudentTransformer.studentToStudentResponse(savedStudent);
     }
 
-    public Student getStudent(int regNo) {
+    public StudentResponse getStudent(int regNo) {
 
         Optional<Student> studentOptional = studentRepository.findById(regNo);
         if(studentOptional.isPresent()){
-            return studentOptional.get();
+            Student student = studentOptional.get();
+            return StudentTransformer.studentToStudentResponse(student);
         }
         return null;
     }
@@ -61,7 +53,7 @@ public class StudentService {
         studentRepository.deleteById(regNo);
     }
 
-    public Student updateAge(int regNo, int newAge) {
+    public StudentResponse updateAge(int regNo, int newAge) {
         Optional<Student> studentOptional = studentRepository.findById(regNo);
 
         if(studentOptional.isPresent()){
@@ -69,22 +61,34 @@ public class StudentService {
             student.setAge(newAge);
 
             studentRepository.save(student);
-            return student;
+
+            return StudentTransformer.studentToStudentResponse(student);
         }
 
 
         return null;
     }
 
-    public List<Student> allStudents() {
-        return studentRepository.findAll();
+    public List<StudentResponse> allStudents() {
+        List<Student> students = studentRepository.findAll();
+        List<StudentResponse> studentResponseList = new ArrayList<>();
+        for(Student student : students) {
+            StudentResponse studentResponse = StudentTransformer.studentToStudentResponse(student);
+            studentResponseList.add(studentResponse);
+        }
+
+        return studentResponseList;
     }
 
-    public List<Student> allMaleStudents() {
-        List<Student> allStudent = allStudents();
-        allStudent.removeIf(student -> student.getGender() != Gender.MALE);
-        if(allStudent == null)
-            return null;
-        return allStudent;
+    public List<StudentResponse> allMaleStudents() {
+        Gender gender = Gender.MALE;
+        List<Student> studentList = studentRepository.findByGender(gender);
+
+        List<StudentResponse> studentResponseList = new ArrayList<>();
+        for(Student student : studentList) {
+            StudentResponse studentResponse = StudentTransformer.studentToStudentResponse(student);
+            studentResponseList.add(studentResponse);
+        }
+        return studentResponseList;
     }
 }

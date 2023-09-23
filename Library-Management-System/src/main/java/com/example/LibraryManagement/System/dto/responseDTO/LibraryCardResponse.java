@@ -1,20 +1,23 @@
 package com.example.LibraryManagement.System.dto.responseDTO;
 
+import com.example.LibraryManagement.System.Enum.CardStatus;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+
+
+import java.sql.Date;
 
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 @Getter
 @Setter
-public class StudentResponse {
+@Builder
+public class LibraryCardResponse {
 
-    String name;
-    String email;
+    String cardNo;
 
-    String message;
+    CardStatus cardStatus;
 
-    LibraryCardResponse libraryCardResponse;
+    Date issueDate;
 }

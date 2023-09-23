@@ -14,7 +14,7 @@ import java.util.List;
 @Setter
 @Getter
 @Entity
-
+@Builder
 public class Author {
 
     @Id
