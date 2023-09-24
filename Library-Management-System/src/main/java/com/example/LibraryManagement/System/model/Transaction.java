@@ -7,6 +7,8 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.CreationTimestamp;
 
+import java.util.Date;
+
 
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @NoArgsConstructor
@@ -21,10 +23,10 @@ public class Transaction {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     int id;
 
-    String transactionNumber;
+    String transactionNumber; //UUID
 
     @CreationTimestamp
-    String transactionTime;
+    Date transactionTime;
 
     @Enumerated(EnumType.STRING)
     TransactionStatus transactionStatus;
