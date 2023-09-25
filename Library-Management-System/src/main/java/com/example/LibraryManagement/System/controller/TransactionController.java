@@ -1,6 +1,7 @@
 package com.example.LibraryManagement.System.controller;
 
 import com.example.LibraryManagement.System.dto.responseDTO.IssueResponse;
+import com.example.LibraryManagement.System.exception.TransactionNotFoundException;
 import com.example.LibraryManagement.System.service.TransactionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -27,6 +28,16 @@ public class TransactionController {
         }
         catch (Exception e) {
             return new ResponseEntity(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @DeleteMapping("/release-book")
+    public ResponseEntity<String> releaseBook(@RequestParam("transactionId") int transactionId){
+        try{
+            transactionService.releaseBook(transactionId);
+            return new ResponseEntity<>("Book has been released!", HttpStatus.OK);
+        } catch (TransactionNotFoundException e){
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
 }

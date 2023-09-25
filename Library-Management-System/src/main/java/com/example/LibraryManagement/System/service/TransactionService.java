@@ -3,13 +3,19 @@ package com.example.LibraryManagement.System.service;
 import com.example.LibraryManagement.System.Enum.TransactionStatus;
 import com.example.LibraryManagement.System.dto.responseDTO.IssueResponse;
 import com.example.LibraryManagement.System.exception.BookNotAvailableException;
+import com.example.LibraryManagement.System.exception.TransactionNotFoundException;
+import com.example.LibraryManagement.System.mailer.MailComposer;
 import com.example.LibraryManagement.System.model.Book;
+import com.example.LibraryManagement.System.model.LibraryCard;
 import com.example.LibraryManagement.System.model.Student;
 import com.example.LibraryManagement.System.model.Transaction;
 import com.example.LibraryManagement.System.repository.BookRepository;
 import com.example.LibraryManagement.System.repository.StudentRepository;
 import com.example.LibraryManagement.System.repository.TransactionRepository;
+import com.example.LibraryManagement.System.transformer.TransactionTransformer;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -22,11 +28,14 @@ public class TransactionService {
     final StudentRepository studentRepository;
 
     final TransactionRepository transactionRepository;
+
+    final JavaMailSender javaMailSender;
     @Autowired
-    public TransactionService(BookRepository bookRepository, StudentRepository studentRepository, TransactionRepository transactionRepository) {
+    public TransactionService(BookRepository bookRepository, StudentRepository studentRepository, TransactionRepository transactionRepository, JavaMailSender javaMailSender) {
         this.bookRepository = bookRepository;
         this.studentRepository = studentRepository;
         this.transactionRepository = transactionRepository;
+        this.javaMailSender = javaMailSender;
     }
 
     public IssueResponse issueBook(int bookId, int studentId) {
@@ -73,16 +82,39 @@ public class TransactionService {
         Book savebook =  bookRepository.save(book);
         Student saveStudent = studentRepository.save(student);
 
+
+        // send mail
+        SimpleMailMessage message = MailComposer.composeIssueBookEmail(savebook, saveStudent, saveTransaction);
+        javaMailSender.send(message);
         // set data to issueResponse
 
-        return IssueResponse.builder()
-                .transactionNumber(saveTransaction.getTransactionNumber())
-                .transactionTime(saveTransaction.getTransactionTime())
-                .transactionStatus(saveTransaction.getTransactionStatus())
-                .bookName(savebook.getTitle())
-                .authorName(savebook.getAuthor().getName())
-                .studentName(saveStudent.getName())
-                .libraryCardNumber(saveStudent.getLibraryCard().getCardNo())
-                .build();
+        return TransactionTransformer.TransactionToIssueResponse(transaction);
+    }
+
+    public void releaseBook(int transactionId) {
+        // check if transaction exists
+        Optional<Transaction> transactionOptional = transactionRepository.findById(transactionId);
+        if(transactionOptional.isEmpty()){
+            throw new TransactionNotFoundException("Invalid transaction Id!");
+        }
+        // get transaction
+        Transaction transaction = transactionOptional.get();
+        // get corresponding book and library card
+        Book book = transaction.getBook();
+        LibraryCard libraryCard = transaction.getLibraryCard();
+        // set book free
+        book.setIssue(false);
+        // remove transaction from its parent tables i.e. book and library card
+        book.getTransactionList().remove(transaction);
+        libraryCard.getTransactionList().remove(transaction);
+        // remove transaction from transaction DB
+        transactionRepository.delete(transaction);
+        // save parent entities to update them
+        Book savedBook = bookRepository.save(book);
+        Student savedStudent = studentRepository.save(libraryCard.getStudent());
+
+        // send email
+        SimpleMailMessage message = MailComposer.sendReleaseBookEmail(savedStudent, savedBook, transaction);
+        javaMailSender.send(message);
     }
 }
